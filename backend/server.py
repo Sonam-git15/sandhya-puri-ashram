@@ -1,89 +1,149 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+"""
+FastAPI proxy shim.
+
+Per platform constraints, supervisor runs `uvicorn server:app` on 0.0.0.0:8001.
+The actual backend is implemented in Node.js + Express.js (MERN stack) and
+runs as a child process on 127.0.0.1:$NODE_PORT. This shim spawns that child
+on startup and reverse-proxies every /api/* request to it.
+
+All real application logic lives under /app/backend/node/.
+"""
 import os
-import logging
+import asyncio
+import atexit
+import signal
+import subprocess
+import time
+from contextlib import asynccontextmanager
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
+
+import httpx
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv(Path(__file__).parent / ".env")
+
+NODE_PORT = os.environ.get("NODE_PORT", "8002")
+NODE_BACKEND_URL = f"http://127.0.0.1:{NODE_PORT}"
+NODE_DIR = Path(__file__).parent / "node"
+
+_node_proc: subprocess.Popen | None = None
 
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+def start_node_backend() -> None:
+    global _node_proc
+    if _node_proc and _node_proc.poll() is None:
+        return
+    env = os.environ.copy()
+    env["PORT"] = NODE_PORT
+    _node_proc = subprocess.Popen(
+        ["node", "server.js"],
+        cwd=str(NODE_DIR),
+        env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        preexec_fn=os.setsid,
+    )
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+def stop_node_backend() -> None:
+    global _node_proc
+    if _node_proc and _node_proc.poll() is None:
+        try:
+            os.killpg(os.getpgid(_node_proc.pid), signal.SIGTERM)
+            _node_proc.wait(timeout=5)
+        except Exception:
+            try:
+                os.killpg(os.getpgid(_node_proc.pid), signal.SIGKILL)
+            except Exception:
+                pass
+    _node_proc = None
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+
+atexit.register(stop_node_backend)
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+async def wait_for_node(timeout: float = 30.0) -> bool:
+    deadline = time.time() + timeout
+    async with httpx.AsyncClient(timeout=2.0) as client:
+        while time.time() < deadline:
+            try:
+                r = await client.get(f"{NODE_BACKEND_URL}/api/health")
+                if r.status_code == 200:
+                    return True
+            except Exception:
+                pass
+            await asyncio.sleep(0.5)
+    return False
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    start_node_backend()
+    await wait_for_node()
+    yield
+    stop_node_backend()
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
-app.include_router(api_router)
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+_HOP_BY_HOP = {
+    "connection",
+    "keep-alive",
+    "proxy-authenticate",
+    "proxy-authorization",
+    "te",
+    "trailers",
+    "transfer-encoding",
+    "upgrade",
+    "host",
+    "content-length",
+    "content-encoding",
+}
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+
+@app.get("/")
+async def root():
+    return {"service": "Sandhya Puri Sanyas Ashram API", "stack": "MERN (Node.js + Express.js + MongoDB)"}
+
+
+@app.api_route(
+    "/api/{full_path:path}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+)
+async def proxy_api(full_path: str, request: Request):
+    if _node_proc is None or _node_proc.poll() is not None:
+        start_node_backend()
+        await wait_for_node(timeout=20)
+
+    url = f"{NODE_BACKEND_URL}/api/{full_path}"
+    headers = {k: v for k, v in request.headers.items() if k.lower() not in _HOP_BY_HOP}
+    body = await request.body()
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        upstream = await client.request(
+            method=request.method,
+            url=url,
+            headers=headers,
+            content=body,
+            params=dict(request.query_params),
+        )
+
+    response_headers = {
+        k: v for k, v in upstream.headers.items() if k.lower() not in _HOP_BY_HOP
+    }
+    return Response(
+        content=upstream.content,
+        status_code=upstream.status_code,
+        headers=response_headers,
+        media_type=upstream.headers.get("content-type"),
+    )
