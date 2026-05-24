@@ -4,11 +4,17 @@ import { ChevronDown } from 'lucide-react';
 import { api } from '../lib/api';
 import { useLang } from '../contexts/LanguageContext';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+function resolveUrl(u) {
+    if (!u) return u;
+    if (/^https?:\/\//i.test(u) || u.startsWith('data:')) return u;
+    return `${BACKEND_URL}${u}`;
+}
+
 const FALLBACK = [
-    'https://images.unsplash.com/photo-1529733772151-bab41484710a?crop=entropy&cs=srgb&fm=jpg&w=1920&q=85',
-    'https://images.unsplash.com/photo-1557062975-96113e46608b?crop=entropy&cs=srgb&fm=jpg&w=1920&q=85',
-    'https://images.unsplash.com/photo-1665003725647-3ae0f01140b1?crop=entropy&cs=srgb&fm=jpg&w=1920&q=85',
-    'https://images.unsplash.com/photo-1726501604891-19fb7f7cd37b?crop=entropy&cs=srgb&fm=jpg&w=1920&q=85',
+    'https://customer-assets.emergentagent.com/job_mern-temple-site/artifacts/obv2xl8j_sandhya-puri-sanyas-ashram-ip-estate-delhi-ashrams-ngjswmw0wt.jpg',
+    'https://customer-assets.emergentagent.com/job_mern-temple-site/artifacts/izblo8ol_WhatsApp%20Image%202026-04-27%20at%201.48.57%20AM%20%282%29.jpeg',
+    'https://customer-assets.emergentagent.com/job_mern-temple-site/artifacts/xjxr5i2d_IMG_9718.JPG.jpeg',
 ];
 
 export default function HeroSlider() {
@@ -21,7 +27,7 @@ export default function HeroSlider() {
         api.get('/hero')
             .then((r) => {
                 if (!mounted) return;
-                const urls = (r.data?.images || []).map((i) => i.url).filter(Boolean);
+                const urls = (r.data?.images || []).map((i) => resolveUrl(i.url)).filter(Boolean);
                 if (urls.length) setImages(urls);
             })
             .catch(() => {});

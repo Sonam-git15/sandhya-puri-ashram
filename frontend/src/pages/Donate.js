@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { HeartHandshake, Loader2, ShieldCheck, QrCode } from 'lucide-react';
+import { HeartHandshake, Loader2, ShieldCheck, QrCode, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import SectionHeading from '../components/SectionHeading';
 import { api } from '../lib/api';
 import { useLang } from '../contexts/LanguageContext';
-
-const QUICK_AMOUNTS = [101, 501, 1100, 2100, 5100, 11000];
 
 function loadRazorpayScript() {
     return new Promise((resolve) => {
@@ -227,19 +225,6 @@ export default function Donate() {
                                             placeholder="e.g. 501"
                                             data-testid="donate-amount-input"
                                         />
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            {QUICK_AMOUNTS.map((a) => (
-                                                <button
-                                                    key={a}
-                                                    type="button"
-                                                    onClick={() => setForm((f) => ({ ...f, amount: String(a) }))}
-                                                    className="px-3 py-1.5 text-xs rounded-full border border-ashram-border hover:border-ashram-saffron hover:text-ashram-saffron transition-colors duration-500"
-                                                    data-testid={`donate-quick-${a}`}
-                                                >
-                                                    ₹{a.toLocaleString()}
-                                                </button>
-                                            ))}
-                                        </div>
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">Message (optional)</label>
@@ -265,6 +250,25 @@ export default function Donate() {
                                     <p className="text-[11px] text-ashram-inkSoft/80 text-center">
                                         Secure payment processed via Razorpay. We never store card details.
                                     </p>
+
+                                    {/* Trust badges */}
+                                    <div className="pt-3 border-t border-ashram-border" data-testid="donate-trust-badges">
+                                        <div className="flex items-center justify-center gap-2 text-xs text-ashram-inkSoft mb-3">
+                                            <Lock size={12} className="text-emerald-600" />
+                                            <span className="tracking-wider uppercase">256-bit SSL Secured</span>
+                                        </div>
+                                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] text-ashram-inkSoft/85 uppercase tracking-[0.2em]">
+                                            <span className="px-2 py-1 rounded border border-ashram-border bg-ashram-bg" data-testid="badge-visa">Visa</span>
+                                            <span className="px-2 py-1 rounded border border-ashram-border bg-ashram-bg" data-testid="badge-mastercard">Mastercard</span>
+                                            <span className="px-2 py-1 rounded border border-ashram-border bg-ashram-bg" data-testid="badge-rupay">RuPay</span>
+                                            <span className="px-2 py-1 rounded border border-ashram-border bg-ashram-bg" data-testid="badge-upi">UPI</span>
+                                            <span className="px-2 py-1 rounded border border-ashram-border bg-ashram-bg" data-testid="badge-netbanking">Net&nbsp;Banking</span>
+                                            <span className="px-2 py-1 rounded border border-ashram-border bg-ashram-bg" data-testid="badge-wallets">Wallets</span>
+                                        </div>
+                                        <div className="mt-3 text-center text-[10px] text-ashram-inkSoft/70 tracking-wider">
+                                            Powered by <span className="text-ashram-saffron font-medium">Razorpay</span>
+                                        </div>
+                                    </div>
                                 </form>
                             )}
                         </div>

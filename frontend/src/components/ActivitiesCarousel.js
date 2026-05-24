@@ -3,6 +3,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../lib/api';
 import { useLang } from '../contexts/LanguageContext';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+function resolveUrl(u) {
+    if (!u) return u;
+    if (/^https?:\/\//i.test(u) || u.startsWith('data:')) return u;
+    return `${BACKEND_URL}${u}`;
+}
+
 const FALLBACK = [
     {
         url: 'https://images.unsplash.com/photo-1627894483216-2138af692e32?crop=entropy&cs=srgb&fm=jpg&w=1600&q=85',
@@ -35,7 +42,7 @@ export default function ActivitiesCarousel() {
     useEffect(() => {
         api.get('/activities')
             .then((r) => {
-                const list = r.data?.activities || [];
+                const list = (r.data?.activities || []).map((a) => ({ ...a, url: resolveUrl(a.url) }));
                 if (list.length) setItems(list);
             })
             .catch(() => {});

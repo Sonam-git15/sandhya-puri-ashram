@@ -16,6 +16,8 @@ import Contact from './pages/Contact';
 import Donate from './pages/Donate';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 import './App.css';
 
@@ -35,6 +37,8 @@ function App() {
                             <Route path="/donate" element={<Donate />} />
                         </Route>
                         <Route path="/admin/login" element={<AdminLogin />} />
+                        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/admin/reset-password/:token" element={<ResetPassword />} />
                         <Route
                             path="/admin"
                             element={

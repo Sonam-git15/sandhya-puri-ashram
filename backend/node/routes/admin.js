@@ -20,47 +20,32 @@ router.get('/stats', requireAdmin, async (_req, res) => {
   res.json({ totalDonations, totalAmount, totalSubmissions });
 });
 
-// GET /api/admin/donations/export?format=csv
-router.get('/donations/export', requireAdmin, async (req, res) => {
+// GET /api/admin/donations/export
+router.get('/donations/export', requireAdmin, async (_req, res) => {
   const list = await Donation.find({}).sort({ createdAt: -1 }).lean();
   const header = [
-    'createdAt',
-    'donorName',
-    'email',
-    'amount',
-    'paymentStatus',
-    'mode',
-    'orderId',
-    'paymentId',
-    'upiTxnId',
-    'message',
+    'createdAt', 'donorName', 'email', 'amount', 'paymentStatus',
+    'mode', 'orderId', 'paymentId', 'upiTxnId', 'message',
   ];
   const lines = [header.join(',')];
   for (const d of list) {
     lines.push(
-      header
-        .map((k) => {
-          const v = d[k] == null ? '' : String(d[k]).replace(/"/g, '""');
-          return `"${v}"`;
-        })
-        .join(',')
+      header.map((k) => {
+        const v = d[k] == null ? '' : String(d[k]).replace(/"/g, '""');
+        return `"${v}"`;
+      }).join(',')
     );
   }
   res.setHeader('Content-Type', 'text/csv');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="donations_${Date.now()}.csv"`
-  );
+  res.setHeader('Content-Disposition', `attachment; filename="donations_${Date.now()}.csv"`);
   res.send(lines.join('\n'));
 });
 
-// GET /api/admin/settings/:key
 router.get('/settings/:key', requireAdmin, async (req, res) => {
   const s = await Setting.findOne({ key: req.params.key }).lean();
   res.json({ key: req.params.key, value: s ? s.value : null });
 });
 
-// PUT /api/admin/settings/:key  { value }
 router.put('/settings/:key', requireAdmin, async (req, res) => {
   const { value } = req.body || {};
   await Setting.findOneAndUpdate(
@@ -71,13 +56,19 @@ router.put('/settings/:key', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-// GET /api/admin/settings (public-ish: upi id for donate page)
+// GET /api/admin/public-settings — public for donate / contact pages
 router.get('/public-settings', async (_req, res) => {
-  const upi = await Setting.findOne({ key: 'upi_id' }).lean();
-  const qr = await Setting.findOne({ key: 'upi_qr_url' }).lean();
+  const keys = ['upi_id', 'upi_qr_url', 'phone', 'whatsapp'];
+  const docs = await Setting.find({ key: { $in: keys } }).lean();
+  const map = {};
+  for (const d of docs) map[d.key] = d.value;
   res.json({
-    upi_id: upi ? upi.value : 'sandhyapuri@upi',
-    upi_qr_url: qr ? qr.value : '',
+    upi_id: map.upi_id || 'sandhyapuri@upi',
+    upi_qr_url: map.upi_qr_url || '',
+    phone: map.phone || process.env.ASHRAM_PHONE || '',
+    whatsapp: map.whatsapp || process.env.ASHRAM_WHATSAPP || '',
+    lat: Number(process.env.ASHRAM_LAT) || 28.6293963,
+    lng: Number(process.env.ASHRAM_LNG) || 77.2474045,
   });
 });
 

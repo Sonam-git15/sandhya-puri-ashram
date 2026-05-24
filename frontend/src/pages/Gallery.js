@@ -5,13 +5,22 @@ import Lightbox from '../components/Lightbox';
 import { api } from '../lib/api';
 import { useLang } from '../contexts/LanguageContext';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Resolve relative /api/uploads URLs against the backend host
+function resolveUrl(url) {
+    if (!url) return url;
+    if (/^https?:\/\//i.test(url) || url.startsWith('data:')) return url;
+    return `${BACKEND_URL}${url}`;
+}
+
 export default function Gallery() {
     const { t } = useLang();
     const [page, setPage] = useState(1);
     const [data, setData] = useState({ images: [], totalPages: 1, total: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [active, setActive] = useState(null);
+    const [lightboxIndex, setLightboxIndex] = useState(null);
 
     useEffect(() => {
         let mounted = true;
@@ -34,6 +43,11 @@ export default function Gallery() {
     }, [page]);
 
     const pages = Array.from({ length: data.totalPages }, (_, i) => i + 1);
+    const lightboxItems = data.images.map((img) => ({
+        id: img.id,
+        url: resolveUrl(img.url),
+        caption: img.caption || '',
+    }));
 
     return (
         <div data-testid="gallery-page" className="relative">
@@ -55,16 +69,16 @@ export default function Gallery() {
                     ) : (
                         <>
                             <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-7" data-testid="gallery-grid">
-                                {data.images.map((img) => (
+                                {data.images.map((img, idx) => (
                                     <button
                                         key={img.id}
                                         type="button"
-                                        onClick={() => setActive(img)}
+                                        onClick={() => setLightboxIndex(idx)}
                                         className="group relative overflow-hidden rounded-2xl border border-ashram-border bg-white aspect-square"
                                         data-testid={`gallery-item-${img.id}`}
                                     >
                                         <img
-                                            src={img.url}
+                                            src={resolveUrl(img.url)}
                                             alt={img.caption || 'Ashram gallery image'}
                                             loading="lazy"
                                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
@@ -117,8 +131,13 @@ export default function Gallery() {
                 </div>
             </section>
 
-            {active && (
-                <Lightbox src={active.url} alt={active.caption} onClose={() => setActive(null)} />
+            {lightboxIndex != null && (
+                <Lightbox
+                    items={lightboxItems}
+                    index={lightboxIndex}
+                    onClose={() => setLightboxIndex(null)}
+                    onIndexChange={setLightboxIndex}
+                />
             )}
         </div>
     );

@@ -65,6 +65,15 @@ export default function AdminLogin() {
                                 data-testid="admin-password-input"
                             />
                         </div>
+                        <div className="flex justify-end -mt-2">
+                            <Link
+                                to="/admin/forgot-password"
+                                className="text-xs text-ashram-saffron hover:text-ashram-saffronDeep transition-colors duration-500"
+                                data-testid="admin-forgot-link"
+                            >
+                                Forgot Password?
+                            </Link>
+                        </div>
                         <button
                             type="submit"
                             disabled={busy}
