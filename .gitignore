@@ -1,82 +1,105 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# IDE and editors
-.idea/
-.vscode/
-
 # Dependencies
 node_modules/
-/node_modules
-/.pnp
+**/node_modules/
+.pnp
 .pnp.js
 .yarn/install-state.gz
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# Testing
-/coverage
-
-# Next.js
-/.next/
-/out/
-next-env.d.ts
-*.tsbuildinfo
-
-# Production builds
-/build
-dist/
-dist
-
-# Environment files (comprehensive coverage)
-
-*token.json*
-*credentials.json*
-
-# Logs and debug files
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-dump.rdb
-
-# System files
-.DS_Store
-*.pem
+.npm/
+.yarn-integrity
 
 # Python
 __pycache__/
-*pyc*
-venv/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+MANIFEST
 .venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
 
-# Development tools
-chainlit.md
-.chainlit
-.ipynb_checkpoints/
-.ac
+# Environment variables (NEVER commit real values)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.local
 
-# Deployment
-.vercel
+# Build artifacts
+build/
+dist/
+out/
+.next/
+.vite/
+.parcel-cache/
 
-# Data and databases
-agenthub/agents/youtube/db
-
-# Archive files and large assets
-**/*.zip
-**/*.tar.gz
-**/*.tar
-**/*.tgz
-*.pack
-*.deb
-*.dylib
-
-# Build caches
+# Runtime / cache
 .cache/
+.eslintcache
+*.tsbuildinfo
+.history/
 
-memory/test_credentials.md
+# Uploads — user-managed media, not source code
+backend/node/uploads/*
+!backend/node/uploads/.gitkeep
+backend/node/uploads/**/*
+!backend/node/uploads/**/.gitkeep
 
-# Mobile development
-android-sdk/
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Tests / reports
+test_reports/
+coverage/
+*.lcov
+.nyc_output/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+tmp/
+temp/
+
+# Emergent platform internals (already public via artifacts but no need to commit)
+.emergent/
+/app/memory/test_credentials.md
