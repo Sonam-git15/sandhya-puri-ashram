@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, Globe } from 'lucide-react';
+import { Menu, X, Globe, Check } from 'lucide-react';
 import { useLang } from '../contexts/LanguageContext';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 const NAV = [
     { to: '/', label: 'Home', testid: 'nav-home' },
@@ -44,20 +50,20 @@ export default function Header() {
                     : 'bg-white/40 backdrop-blur-md'
             }`}
         >
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between gap-4">
-                {/* Logo */}
-                <Link to="/" className="flex items-center gap-3 group" data-testid="brand-link">
+            <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-10 py-2.5 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
+                {/* Brand — always fully visible, smaller on mobile */}
+                <Link to="/" className="flex items-center gap-1.5 sm:gap-3 group min-w-0 shrink" data-testid="brand-link">
                     <span
-                        className="font-devanagari text-3xl text-ashram-saffron leading-none transition-transform duration-700 group-hover:scale-105"
+                        className="font-devanagari text-2xl sm:text-3xl text-ashram-saffron leading-none transition-transform duration-700 group-hover:scale-105 shrink-0"
                         aria-hidden
                     >
                         ॐ
                     </span>
-                    <span className="flex flex-col leading-tight">
-                        <span className="font-display text-lg sm:text-xl text-ashram-ink tracking-wide">
+                    <span className="flex flex-col leading-tight min-w-0">
+                        <span className="font-display text-sm sm:text-lg lg:text-xl text-ashram-ink tracking-wide whitespace-nowrap">
                             Sandhya Puri
                         </span>
-                        <span className="tracking-label !text-[0.6rem] text-ashram-gold">
+                        <span className="tracking-label !text-[0.5rem] sm:!text-[0.6rem] text-ashram-gold whitespace-nowrap">
                             Sanyas Ashram
                         </span>
                     </span>
@@ -85,10 +91,13 @@ export default function Header() {
                 </nav>
 
                 {/* Right cluster */}
-                <div className="flex items-center gap-2">
-                    {/* Language switcher */}
-                    <div className="flex items-center gap-1 rounded-full border border-ashram-border bg-white/70 px-1 py-1" data-testid="language-switcher">
-                        <Globe size={14} className="ml-2 text-ashram-gold hidden sm:block" aria-hidden />
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                    {/* DESKTOP language switcher — horizontal pills (unchanged) */}
+                    <div
+                        className="hidden lg:flex items-center gap-1 rounded-full border border-ashram-border bg-white/70 px-1 py-1"
+                        data-testid="language-switcher"
+                    >
+                        <Globe size={14} className="ml-2 text-ashram-gold" aria-hidden />
                         {LANG_OPTIONS.map((opt) => (
                             <button
                                 key={opt.code}
@@ -103,30 +112,63 @@ export default function Header() {
                                 }`}
                                 title={opt.label}
                             >
-                                <span className="font-devanagari sm:hidden">{opt.short}</span>
-                                <span className="hidden sm:inline">{opt.label}</span>
+                                {opt.label}
                             </button>
                         ))}
                     </div>
 
-                    {/* Donate CTA */}
+                    {/* MOBILE language switcher — globe icon → dropdown */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                type="button"
+                                aria-label="Change language"
+                                data-testid="mobile-lang-trigger"
+                                className="lg:hidden inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-full border border-ashram-border bg-white/70 text-ashram-gold hover:text-ashram-saffron hover:border-ashram-gold transition-colors duration-500"
+                            >
+                                <Globe size={18} aria-hidden />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" sideOffset={8} className="min-w-[10rem]" data-testid="mobile-lang-menu">
+                            {LANG_OPTIONS.map((opt) => (
+                                <DropdownMenuItem
+                                    key={opt.code}
+                                    onClick={() => setLang(opt.code)}
+                                    data-testid={`mobile-lang-${opt.code}`}
+                                    className={`cursor-pointer flex items-center justify-between gap-3 ${
+                                        lang === opt.code ? 'text-ashram-saffron font-medium' : ''
+                                    }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <span className="font-devanagari text-base w-5 text-center">{opt.short}</span>
+                                        <span>{opt.label}</span>
+                                    </span>
+                                    {lang === opt.code && <Check size={14} aria-hidden />}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Donate CTA — visible on ALL screens, compact on mobile */}
                     <Link
                         to="/donate"
-                        className="hidden md:inline-flex btn-saffron !py-2 !px-5 text-sm"
+                        className="btn-saffron !py-1.5 !px-3 sm:!py-2 sm:!px-5 text-xs sm:text-sm shrink-0"
                         data-testid="header-donate-btn"
                     >
-                        Donate Now
+                        <span className="hidden sm:inline">Donate Now</span>
+                        <span className="sm:hidden">Donate</span>
                     </Link>
 
-                    {/* Mobile toggle */}
+                    {/* Mobile menu toggle — 48x48 tap target, never clipped */}
                     <button
                         type="button"
-                        className="lg:hidden p-2 rounded-md text-ashram-ink"
+                        className="lg:hidden inline-flex items-center justify-center w-12 h-12 shrink-0 rounded-md text-ashram-ink hover:text-ashram-saffron hover:bg-ashram-bg transition-colors duration-500 -mr-1"
                         onClick={() => setOpen((v) => !v)}
-                        aria-label="Toggle menu"
+                        aria-label={open ? 'Close menu' : 'Open menu'}
+                        aria-expanded={open}
                         data-testid="mobile-menu-toggle"
                     >
-                        {open ? <X size={22} /> : <Menu size={22} />}
+                        {open ? <X size={24} aria-hidden /> : <Menu size={24} aria-hidden />}
                     </button>
                 </div>
             </div>
