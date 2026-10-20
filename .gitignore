@@ -15,8 +15,6 @@ __pycache__/
 .Python
 *.egg
 *.egg-info/
-dist/
-build/
 develop-eggs/
 downloads/
 eggs/
@@ -100,9 +98,8 @@ coverage/
 tmp/
 temp/
 
-# Emergent platform internals (already public via artifacts but no need to commit)
+# Emergent
 .emergent/
-/app/memory/test_credentials.md
 .env.*
 *.env
 credentials.json
