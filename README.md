@@ -2,257 +2,201 @@
 
 > *A sacred sanctuary for peace, sadhana and spiritual awakening — IP Estate, New Delhi.*
 
-A complete, responsive MERN-stack website for **Sandhya Puri Sanyas Ashram**, located near IG Stadium, IP Estate, New Delhi – 110002. The platform powers the public site (hero slideshow, history, gallery, activities, donations, contact) and a secure admin dashboard for full content management.
-
----
+A responsive, multilingual full-stack website for Sandhya Puri Sanyas Ashram. The platform includes a public website with information about the ashram, history, gallery, activities, donations and contact details, along with an admin dashboard for managing website content.
 
 ## ✨ Features
 
-- 🌐 **Tri-lingual content** — Hindi (default), English, Sanskrit (switcher with structured i18n JSON)
-- 🎞️ **Hero image slideshow** — auto-rotating with fade transitions and slow zoom
-- 🪔 **Amazon-style activities carousel** — center card with side previews, swipe support
-- 🖼️ **Gallery** — 3×3 paginated grid with lightbox (prev/next, keyboard, swipe)
-- 🎬 **About page video** — YouTube embed or MP4 upload (admin)
-- 📜 **History page** — rich Hindi narrative with elegant typography
-- 📞 **Contact** — Google Map with custom ॐ pin, Get Directions / WhatsApp / Call Now buttons, captcha-protected form
-- 💝 **Donations** — Razorpay checkout (UPI/Cards/Net Banking/Wallets) + UPI QR with manual transaction record
-- 🛡️ **Secure admin dashboard** — JWT auth, donation history with CSV export, contact submissions, media management
-- 🔑 **Forgot/Reset password** — secure 15-minute single-use tokens with strong password rules
-- 📱 **Mobile-first responsive** — verified on 320 / 375 / 390 / 414 / 768 / 1024 / 1440px
-- ⚡ **Lazy loading + code splitting** — optimised images, fast page loads, SEO meta tags
+- 🌐 **Multilingual content** — Hindi, English and Sanskrit.
+- 🎞️ **Hero image slideshow** — Rotating banners with visual transitions.
+- 🪔 **Activities section** — Interactive carousel for displaying activities.
+- 🖼️ **Gallery management** — Image grid, pagination and lightbox.
+- 🎬 **About video** — Video embedding and admin-managed uploads.
+- 📜 **History page** — Dedicated page for the ashram's history.
+- 📞 **Contact page** — Contact form, map and contact actions.
+- 💝 **Donation system** — Razorpay checkout and manual UPI donation recording.
+- 🛡️ **Admin dashboard** — Content management, donation history and contact submissions.
+- 🔑 **Authentication** — Admin login and password reset functionality.
+- 📱 **Responsive design** — Layouts for mobile, tablet and desktop screens.
+- ⚡ **Performance and SEO** — Lazy loading, code splitting and SEO metadata.
 
----
+## 🛠️ Tech Stack
 
-## 🛠 Tech Stack
-
-| Layer | Technology |
+| Layer | Technologies |
 |---|---|
-| **Frontend** | React.js 19 · React Router v7 · Tailwind CSS · shadcn/ui · Sonner · lucide-react · axios |
-| **Backend** | Node.js · Express.js · Mongoose |
-| **Database** | MongoDB |
-| **Payments** | Razorpay (Standard Checkout + HMAC-SHA256 signature verification) |
-| **Auth** | JWT (jsonwebtoken) + bcryptjs |
-| **Uploads** | Multer (12 MB limit, disk storage with auto-cleanup) |
-| **Fonts** | Tiro Devanagari Hindi · Mukta · Cormorant Garamond |
-
----
+| Frontend | React.js, React Router, Tailwind CSS, Axios |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Authentication | JWT, bcryptjs |
+| File uploads | Multer |
+| Payments | Razorpay |
+| Version control | Git, GitHub |
 
 ## 📂 Project Structure
 
-```
-.
+```text
+sandhya-puri-ashram/
 ├── backend/
-│   ├── server.py                  # FastAPI proxy → Node child (platform constraint)
-│   ├── requirements.txt
-│   ├── .env.example               # See top-level .env.example
 │   └── node/
-│       ├── server.js              # Express entry point
+│       ├── server.js
 │       ├── package.json
-│       ├── config/db.js           # Mongoose connection
+│       ├── package-lock.json
+│       ├── config/
 │       ├── middleware/
-│       │   ├── auth.js            # JWT middleware
-│       │   └── upload.js          # Multer storages (gallery/hero/activities/videos)
 │       ├── models/
-│       │   ├── Admin.js
-│       │   ├── ActivityImage.js
-│       │   ├── ContactSubmission.js
-│       │   ├── Donation.js
-│       │   ├── GalleryImage.js
-│       │   ├── HeroImage.js
-│       │   ├── PasswordResetToken.js
-│       │   └── Setting.js
 │       ├── routes/
-│       │   ├── auth.js            # login, /me, forgot/reset password, recent-resets
-│       │   ├── donate.js          # create-order, verify, upi-record, list (admin)
-│       │   ├── gallery.js         # paginated list, multi-upload, PUT, DELETE, reorder
-│       │   ├── hero.js
-│       │   ├── activities.js
-│       │   ├── contact.js
-│       │   ├── video.js           # URL save + MP4 upload
-│       │   └── admin.js           # stats, CSV export, public-settings, settings KV
 │       ├── utils/
-│       │   ├── seed.js            # seeds default admin from env
-│       │   └── seedDefaults.js    # seeds hero/activities/gallery if empty/stock
-│       └── uploads/               # multer disk storage (gitignored)
-│
+│       └── uploads/
 ├── frontend/
 │   ├── package.json
-│   ├── tailwind.config.js
-│   ├── public/index.html          # SEO meta + favicon
+│   ├── package-lock.json
+│   ├── public/
 │   └── src/
-│       ├── App.js                 # routes
-│       ├── index.css              # theme + design tokens
-│       ├── i18n/translations.js   # hi/en/sa dictionaries
-│       ├── lib/api.js             # axios instance with JWT
-│       ├── contexts/
-│       │   ├── AuthContext.js
-│       │   └── LanguageContext.js
-│       ├── components/
-│       │   ├── Layout.js, Header.js, Footer.js
-│       │   ├── HeroSlider.js, ActivitiesCarousel.js
-│       │   ├── Lightbox.js, FileUpload.js
-│       │   ├── ProtectedRoute.js, SectionHeading.js
-│       │   └── ui/                # shadcn primitives
-│       └── pages/
-│           ├── Home.js, About.js, History.js
-│           ├── Gallery.js, Contact.js, Donate.js
-│           ├── AdminLogin.js, AdminDashboard.js
-│           └── ForgotPassword.js, ResetPassword.js
-│
 ├── .gitignore
-├── .env.example
 └── README.md
 ```
 
----
+The backend contains the Express API, database configuration, authentication middleware, data models and routes. The frontend contains the React application, reusable components, pages and language translations.
 
-## 🚀 Installation
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- **Node.js** ≥ 18 (LTS recommended) and **Yarn** (or npm)
-- **MongoDB** ≥ 6.0 (local) or a MongoDB Atlas connection string
-- A **Razorpay** account (test keys are fine for development)
+- Node.js 18 or later
+- npm
+- MongoDB running locally or a MongoDB Atlas database
+- Razorpay account if testing payment functionality
 
-### 1. Clone & install
+### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url> sandhya-puri-ashram
+git clone https://github.com/Sonam-git15/sandhya-puri-ashram.git
 cd sandhya-puri-ashram
 ```
 
 ### 2. Configure environment variables
 
-```bash
-cp .env.example backend/.env
-cp .env.example frontend/.env   # then keep only REACT_APP_BACKEND_URL
+Create the backend environment file at `backend/.env` and the frontend environment file at `frontend/.env`.
+
+Configure the required variables using the environment variable names listed below. Do not commit real passwords, API keys or other secrets.
+
+Frontend `.env`:
+
+```env
+REACT_APP_BACKEND_URL=http://127.0.0.1:8002
 ```
 
-Fill in the real values in `backend/.env` (see [Environment Variables](#-environment-variables) below).
+### 3. Install and start the backend
 
-### 3. Backend
+Open a terminal:
 
 ```bash
 cd backend/node
-yarn install            # or: npm install
-yarn start              # node server.js — listens on PORT (default 8002)
+npm install
+npm start
 ```
 
-The first boot will:
-- Connect to MongoDB and create indexes
-- Auto-seed the default admin (`ADMIN_EMAIL` / `ADMIN_PASSWORD`)
-- Seed default hero / activities / gallery images if collections are empty
+The backend uses port `8002` by default.
 
-> The repo also contains a `backend/server.py` FastAPI proxy used by the Emergent platform (supervisor is locked to uvicorn on port 8001). If you're running locally outside that environment, just run `yarn start` from `backend/node/` and point the frontend at it.
+Verify the backend using:
 
-### 4. Frontend
+```text
+http://127.0.0.1:8002/api/health
+```
+
+### 4. Install and start the frontend
+
+Open a second terminal from the project root:
 
 ```bash
 cd frontend
-yarn install
-yarn start              # or: npm run dev
+npm install
+npm start
 ```
 
-Visit **http://localhost:3000**.
+Open the website at:
 
----
+http://localhost:3000
 
-## 🔑 Environment Variables
+Keep the backend running while testing frontend features that require API access.
 
-All env vars are listed in [`.env.example`](./.env.example). Required ones:
+## 🔐 Environment Variables
 
-### Backend (`backend/.env`)
+Configure the following variables in `backend/.env` as required by the application.
 
-| Variable | Required | Description |
-|---|---|---|
-| `MONGO_URL` / `MONGODB_URI` | ✅ | MongoDB connection string |
-| `DB_NAME` | ✅ | Database name (e.g. `sandhya_puri_ashram`) |
-| `JWT_SECRET` | ✅ | Secret for signing JWTs (generate with `openssl rand -hex 32`) |
-| `ADMIN_EMAIL` | ✅ | Email for the auto-seeded admin |
-| `ADMIN_PASSWORD` | ✅ | Initial admin password |
-| `RAZORPAY_KEY_ID` | ✅ | Razorpay Key ID (`rzp_test_…` or `rzp_live_…`) |
-| `RAZORPAY_KEY_SECRET` | ✅ | Razorpay Key Secret |
-| `RAZORPAY_MODE` | ⬜ | `live` (default) or `mock` for offline dev |
-| `RAZORPAY_WEBHOOK_SECRET` | ⬜ | Optional webhook signature secret |
-| `EMAIL_PROVIDER` | ⬜ | Optional (e.g. `resend`, `sendgrid`); blank → reset links logged to console |
-| `EMAIL_USER` / `EMAIL_PASSWORD` | ⬜ | Email provider credentials |
-| `ASHRAM_PHONE` / `ASHRAM_WHATSAPP` | ⬜ | Defaults for Contact page (override via Admin → Settings) |
-| `ASHRAM_LAT` / `ASHRAM_LNG` | ⬜ | Google Map pin coordinates |
-| `PUBLIC_BASE_URL` | ⬜ | Used in password-reset links |
-| `NODE_PORT` | ⬜ | Express server port (default `8002`) |
-| `CORS_ORIGINS` | ⬜ | `*` or comma-separated origins |
+| Variable | Purpose |
+|---|---|
+| `MONGO_URL` or `MONGODB_URI` | MongoDB connection string |
+| `DB_NAME` | Database name |
+| `JWT_SECRET` | Secret used to sign authentication tokens |
+| `ADMIN_EMAIL` | Initial admin email |
+| `ADMIN_PASSWORD` | Initial admin password |
+| `RAZORPAY_KEY_ID` | Razorpay API key ID |
+| `RAZORPAY_KEY_SECRET` | Razorpay API secret |
+| `RAZORPAY_MODE` | Payment mode, as supported by the application |
+| `RAZORPAY_WEBHOOK_SECRET` | Optional webhook verification secret |
+| `EMAIL_PROVIDER` | Optional email provider |
+| `EMAIL_USER` / `EMAIL_PASSWORD` | Optional email credentials |
+| `ASHRAM_PHONE` / `ASHRAM_WHATSAPP` | Contact details |
+| `ASHRAM_LAT` / `ASHRAM_LNG` | Map coordinates |
+| `PUBLIC_BASE_URL` | Public application URL |
+| `NODE_PORT` | Backend port configuration |
+| `CORS_ORIGINS` | Permitted frontend origins |
 
-### Frontend (`frontend/.env`)
+The backend's actual environment variable names and defaults in the source code take precedence over this documentation. Configure only variables supported by the current application.
 
-| Variable | Required | Description |
-|---|---|---|
-| `REACT_APP_BACKEND_URL` | ✅ | Base URL of the backend (e.g. `http://localhost:8001`) |
+## 🔑 Admin Access
 
----
+Use the admin login page:
 
-## 🔐 Default Admin
-
-After first boot, log in at `/admin/login` with the credentials from `.env`:
-
-```
-Email:    admin@sandhyapuri.org     (ADMIN_EMAIL)
-Password: <your ADMIN_PASSWORD>
+```text
+http://localhost:3000/admin/login
 ```
 
-Change the password immediately via **Admin → Forgot Password** flow.
+Configure the initial admin credentials through the backend environment variables. Change the initial password before using the application in a production environment.
 
----
+Never publish actual admin credentials in the README or source control.
 
 ## 🧪 API Overview
 
-| Method | Endpoint | Auth | Purpose |
-|---|---|---|---|
-| `GET` | `/api/health` | — | Health check |
-| `POST` | `/api/auth/login` | — | Admin login → JWT |
-| `POST` | `/api/auth/forgot-password` | — | Generate 15-min reset token |
-| `POST` | `/api/auth/reset-password` | — | Reset using token |
-| `GET` | `/api/auth/recent-resets` | admin | List recent reset URLs |
-| `POST` | `/api/donate/create-order` | — | Create Razorpay order |
-| `POST` | `/api/donate/verify` | — | Verify HMAC-SHA256 signature |
-| `POST` | `/api/donate/upi-record` | — | Record manual UPI donation |
-| `GET` | `/api/donations` | admin | List donations (date filter) |
-| `GET` | `/api/admin/donations/export` | admin | Download CSV |
-| `POST` | `/api/contact` | — | Submit contact form |
-| `GET` | `/api/contact` | admin | List submissions |
-| `GET` | `/api/gallery?page=&limit=` | — | Paginated gallery |
-| `POST` | `/api/gallery/upload` | admin | Multipart image upload |
-| `PUT` | `/api/gallery/:id` | admin | Edit caption / replace image |
-| `DELETE` | `/api/gallery/:id` | admin | Delete (file too) |
-| `GET/POST/DELETE` | `/api/hero` `/api/activities` `/api/video` | admin | Same pattern as gallery |
-| `GET` | `/api/admin/public-settings` | — | UPI ID, phone, WhatsApp, map coords |
-| `PUT` | `/api/admin/settings/:key` | admin | Update setting |
+The Express backend provides API functionality for:
 
----
+- Health checks and admin authentication
+- Password reset
+- Gallery, hero banner and activity management
+- Video management
+- Contact form submissions
+- Donation creation and payment verification
+- Admin settings and donation reports
 
-## 🌐 Internationalisation
+API routes are defined in `backend/node/routes/`. Refer to the current source code for exact endpoints, request formats and authorization requirements.
 
-Content is provided in three languages: Hindi (`hi`), English (`en`), and Sanskrit (`sa`).
+## 🌐 Multilingual Support
 
-- **Navigation labels are always English** (per design spec).
-- **Page body content** switches based on the selected language.
-- Translations live in [`frontend/src/i18n/translations.js`](./frontend/src/i18n/translations.js).
-- The user choice persists in `localStorage` under `ashram_lang`.
+The application supports Hindi, English and Sanskrit.
 
----
+Language translations are maintained in:
 
-## 🚢 Deployment Checklist
+```text
+frontend/src/i18n/translations.js
+```
 
-- [ ] Set `RAZORPAY_MODE=live` and add **live** keys (production)
-- [ ] Set a strong, unique `JWT_SECRET`
-- [ ] Configure SMTP/Resend for password-reset emails (optional)
-- [ ] Switch uploads to S3 / object storage for persistence across deploys
-- [ ] Enable HTTPS in your reverse proxy
-- [ ] Set `PUBLIC_BASE_URL` to your production URL
-- [ ] Configure `CORS_ORIGINS` to your frontend origin (not `*`)
-- [ ] Verify webhooks in Razorpay dashboard (URL + signing secret)
-- [ ] Run `yarn build` in `/frontend` and serve `build/` from your CDN / static host
+The language context manages the selected language and the corresponding page content.
 
----
+## 🚢 Deployment Considerations
+
+Before deploying the application:
+
+- Configure a production MongoDB database.
+- Set a strong, unique `JWT_SECRET`.
+- Configure production environment variables securely.
+- Set the frontend backend URL to the deployed API address.
+- Configure CORS to allow only the intended frontend origin.
+- Use HTTPS for production traffic.
+- Configure persistent object storage for uploaded media if the hosting platform uses ephemeral storage.
+- Configure password reset email delivery if that feature is enabled.
+- Verify Razorpay payment signatures and webhook configuration.
+- Use production payment keys only after completing payment testing.
+- Test admin authentication, image uploads, contact forms and donation flows in the deployed environment.
 
 ## 📜 License
 
